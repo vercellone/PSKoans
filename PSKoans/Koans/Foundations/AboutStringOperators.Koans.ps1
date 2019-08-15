@@ -42,17 +42,17 @@ Describe 'String Comparison Operators' {
             $String = 'this is a string.'
             $OtherString = 'This is a string.'
 
-            __ | Should -Be ($String -eq $OtherString)
+            $____ | Should -Be ($String -eq $OtherString)
             # Watch out for case sensitive operators!
-            __ | Should -Be ($String -ceq $OtherString)
+            $____ | Should -Be ($String -ceq $OtherString)
         }
 
         It 'is useful for a straightforward comparison' {
             $String = 'one more string!'
             $OtherString = "ONE MORE STRING!"
 
-            __ | Should -Be ($String -ne $OtherString)
-            __ | Should -Be ($String -cne $OtherString)
+            $____ | Should -Be ($String -ne $OtherString)
+            $____ | Should -Be ($String -cne $OtherString)
         }
     }
 
@@ -62,8 +62,8 @@ Describe 'String Comparison Operators' {
             $String = 'my string'
             $OtherString = 'your string'
 
-            __ | Should -Be ($String -gt $OtherString)
-            __ | Should -Be ($String -lt $OtherString)
+            $____ | Should -Be ($String -gt $OtherString)
+            $____ | Should -Be ($String -lt $OtherString)
         }
     }
 }
@@ -82,32 +82,33 @@ Describe 'String Array Operators' {
             $String = "hello fellows what a lovely day"
             $String -split ' ' | Should -Be @(
                 'hello'
-                '__'
+                '____'
                 'what'
-                '__'
-                '__'
+                '____'
+                '____'
                 'day'
             )
         }
 
         It 'uses regex by default' {
+            # '.' is a special character in regex, so we have to use \ to indicate a literal period
             $String = 'hello.dear'
-            $String -split '\.' | Should -Be @('__', '__')
+            $String -split '\.' | Should -Be @('____', '____')
         }
 
         It 'can limit the number of substrings' {
             $Planets = 'Mercury,Venus,Earth,Mars,Jupiter,Saturn,Uranus,Neptune'
-            $Planets -split ',', 4 | Should -Be @('__', '__', '__', '__')
+            $Planets -split ',', 4 | Should -Be @('____', '____', '____', '____')
         }
 
-        It 'can use simple matching' {
+        It 'can use non-regex matching' {
             $String = 'hello.dear'
-            $String -split '.', 0, 'simplematch' | Should -Be @('__', '__')
+            $String -split '.', 0, 'simplematch' | Should -Be @('____', '____')
         }
 
         It 'can be case sensitive' {
             $String = "applesAareAtotallyAawesome!"
-            $String -csplit 'A' | Should -Be @('__', '__', '__', '__')
+            $String -csplit 'A' | Should -Be @('____', '____', '____', '____')
         }
     }
 
@@ -123,17 +124,17 @@ Describe 'String Array Operators' {
         #>
         It 'can join an array into a single string' {
             $Array = 'Hi', 'there,', 'what', 'are', 'you', 'doing?'
-            $Array -join ' ' | Should -Be '__'
+            $Array -join ' ' | Should -Be ____
         }
 
         It 'always produces a string result' {
             $Array = 1, 3, 6, 71, 9, 22, 1, 3, 4, 55, 6, 7, 8
-            -join $Array | Should -Be '__'
+            -join $Array | Should -Be ____
         }
 
         It 'can join with any delimiters' {
             $Array = 'This', 'is', 'so', 'embarrassing!'
-            $Array -join '__' | Should -Be 'This-OW! is-OW! so-OW! embarrassing!'
+            $Array -join '____' | Should -Be 'This-OW! is-OW! so-OW! embarrassing!'
         }
     }
 
@@ -142,19 +143,20 @@ Describe 'String Array Operators' {
         It 'lets you treat strings as [char[]] arrays' {
             $String = 'Beware the man-eating rabbit'
 
-            $String[5] | Should -Be '__'
+            # Indexing a string lets you retrieve individual characters
+            $String[5] | Should -Be _
         }
 
         It 'can create a [char[]] array from a string' {
             $String = 'Good luck!'
 
-            $String[0..3] | Should -Be @('__', '__', '__', '__')
+            $String[0..3] | Should -Be @('_', '_', '_', '_')
         }
 
         It 'can be combined with -join to create substrings' {
             $String = 'Mountains are merely mountains.'
 
-            -join $String[0..8] | Should -Be '__'
+            -join $String[0..8] | Should -Be '____'
         }
     }
 }
@@ -173,31 +175,47 @@ Describe 'Regex Operators' {
         # These operators return either $true or $false, indicating whether the string matched.
 
         It 'can be used as a simple conditional' {
-            $String = '__'
+            $String = '____'
 
+            <#
+                The regex pattern '[ch]' matches one or the other of the characters in the brackets.
+                Ranges can also be used, so [a-g] matches one character anywhere in that range.
+            #>
             $String -match '[a-z]' | Should -BeTrue
             $String -notmatch '[xfd]' | Should -BeTrue
         }
 
         It 'can store the matched portions' {
-            $String = '__'
+            $String = '____'
 
             $Result = if ($String -match '[a-z]{4}') {
                 $Matches[0]
             }
 
-            $Result | Should -Be '__'
+            $Result | Should -Be '____'
         }
 
         It 'supports named matches' {
             # Regex uses the (?<NAME>$pattern) syntax to name a portion of a matched string
-            $String = '__'
+            $String = 'Regex is magic'
+            $Pattern = '^(?<FirstWord>[a-z]+) [a-z] (?<LastWord>[a-z]+)$'
+
+            $String -match $Pattern | Should -BeTrue
+
+            # Mind your capitalization when we use -BeExactly
+            $Matches.FirstWord | Should -BeExactly ____
+            $Matches.SecondWord | Should -BeExactly ____
+        }
+
+        It 'supports named matches' {
+            # Consider recent lessons with care
+            $String = '____'
             $Pattern = '^(?<FirstWord>[a-z]+) (?<SecondWord>[a-z]+)$'
 
             $String -match $Pattern | Should -BeTrue
 
-            $Matches.FirstWord | Should -Be '__'
-            $Matches.SecondWord | Should -Be '__'
+            $Matches.FirstWord | Should -Be ____
+            $Matches.SecondWord | Should -Be ____
         }
 
         It 'supports indexed match groups' {
